@@ -57,25 +57,7 @@ module.exports = {
         }
       )
       .setThumbnail(botUser.avatarURL({ dynamic: true, format: 'png', size: 1024 }))
-      .setImage(`https://cdn.discordapp.com/attachments/1170652474563117138/1224660177039396876/MULTI_MUSIC_v1.5.png?ex=661e4cab&is=660bd7ab&hm=f7a542462fabaf9c1530ece5aa72597cff3ac032876bba46df5ddba7e122ea99&`);
-
-    const button1 = new ButtonBuilder()
-      .setLabel('YouTube')
-      .setURL('https://www.youtube.com/channel/UCPbAvYWBgnYhliJa1BIrv0A')
-      .setStyle(ButtonStyle.Link);
-
-    const button2 = new ButtonBuilder()
-      .setLabel('Discord')
-      .setURL('https://discord.gg/FUEHs7RCqz')
-      .setStyle(ButtonStyle.Link);
-
-    const button3 = new ButtonBuilder()
-      .setLabel('Code')
-      .setURL('https://replit.com/@BEASTGAMERS1/MULTI-MUSIC-BOT-v200?v=1')
-      .setStyle(ButtonStyle.Link);
-      
-    const row = new ActionRowBuilder()
-      .addComponents(button1, button2, button3);
+      .setImage(`https://yt3.googleusercontent.com/ytc/AIdro_nYlUJDu7wOPmgWCLoyf9J1OiSvG7U-zOgv81P8Je-Pz1Y=s900-c-k-c0x00ffffff-no-rj`);
     
     message.reply({ embeds: [embed], components: [row] });
   },
