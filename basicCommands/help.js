@@ -1,5 +1,4 @@
-const { EmbedBuilder, ActionRowBuilder, ButtonBuilder } = require('discord.js');
-const { ButtonStyle } = require('discord.js');
+const { EmbedBuilder } = require('discord.js');
 const db = require("../mongodb");
 module.exports = {
   name: 'help',
@@ -27,14 +26,6 @@ module.exports = {
       )
       .setThumbnail(botUser.avatarURL({ dynamic: true, format: 'png', size: 1024 }))
       .setImage(`https://cdn.discordapp.com/attachments/1238619545506414665/1239158112087183480/AIdro_nYlUJDu7wOPmgWCLoyf9J1OiSvG7U-zOgv81P8Je-Pz1Ys900-c-k-c0x00ffffff-no-rj.png?ex=6641e76c&is=664095ec&hm=c3bdf7c878fb1402f908600ecaf61945d59df64656f04ea0f76d43d97f9b0d31&`);
-
-    const button1 = new ButtonBuilder()
-      .setLabel('Kick')
-      .setURL('https://www.kick.com/rustjavi')
-      .setStyle(ButtonStyle.Link);
-      
-    const row = new ActionRowBuilder()
-      .addComponents(button1);
     
     message.reply({ embeds: [embed], components: [row] });
   },
