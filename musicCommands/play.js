@@ -129,7 +129,7 @@ async function playSong(connection, searchQuery, message) {
         name: 'Currently playing a Track',
         iconURL: 'https://cdn.discordapp.com/attachments/1140841446228897932/1144671132948103208/giphy.gif'
       })
-      .setDescription(`\n ‎ \n▶️ **Details :** [${video.title}](${youtubeLink})\n▶️ **Enjoy the Ultimate YouTube Music Experience ** \n▶️ **If link breaks playback try to give query**`)
+      .setDescription(`\n ‎ \n▶️ **Details :** [${video.title}](${youtubeLink})\n▶️ **vos sabeis**`)
       .setImage(video.thumbnails.high.url) 
       .setColor('#2b71ec')
       .setFooter({ text: 'More info - Use Help command Default : ?help' });
