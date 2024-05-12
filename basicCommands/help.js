@@ -58,7 +58,6 @@ module.exports = {
       )
       .setThumbnail(botUser.avatarURL({ dynamic: true, format: 'png', size: 1024 }))
       .setImage(`https://yt3.googleusercontent.com/ytc/AIdro_nYlUJDu7wOPmgWCLoyf9J1OiSvG7U-zOgv81P8Je-Pz1Y=s900-c-k-c0x00ffffff-no-rj`);
-    
-    message.reply({ embeds: [embed], components: [row] });
+  
   },
 };
