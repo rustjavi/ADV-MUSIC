@@ -1,7 +1,6 @@
-const status = "AUTOMATIC";
-const botName = "🌇 MULTI MUSIX ADV";
-const rtxText = "GlaceYT";
-const version = "Latest@ v1.5"; 
+const status = "rustjavi";
+const botName = "PE MUSI";
+const version = "beta 1.0"; 
 const startTime = Date.now();
 
 function printWatermark() {
@@ -10,10 +9,9 @@ function printWatermark() {
   console.log('\x1b[1m\x1b[36m╔════════════════════════════════════════════╗');
   console.log('\x1b[1m\x1b[36m║                                            ║');
   console.log(`\x1b[1m\x1b[36m            ${botName}     `);
-  console.log(`\x1b[1m\x1b[36m            👑 Authorization : ${status}    `);
+  console.log(`\x1b[1m\x1b[36m            👑 Owner : ${status}    `);
   console.log(`\x1b[1m\x1b[36m            💡 Version: ${version}`);
   console.log(`\x1b[1m\x1b[36m            📅 Uptime: ${uptimeInSeconds}s`);
-  console.log(`\x1b[1m\x1b[36m            🚀 Powered by ${rtxText}`);
   console.log('\x1b[1m\x1b[36m║                                            ║');
   console.log('\x1b[1m\x1b[36m╚════════════════════════════════════════════╝\x1b[0m');
 }
