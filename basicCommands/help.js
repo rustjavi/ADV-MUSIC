@@ -21,7 +21,7 @@ module.exports = {
         // Basic commands category
         {
           name: '▶️  Music',
-          value: '`play`, `stop`, `history`,`volume`,`pause`,`resume`,`247`',
+          value: 'play, history, volume, pause, resume, 247',
           inline: true,
         }
       )
