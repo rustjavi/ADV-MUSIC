@@ -117,7 +117,7 @@ client.once('ready', () => {
     console.log('\x1b[32m%s\x1b[0m', `|    🎯 Activity sucessfully set!`);
     client.user.setPresence({
       activities: [{ name: `kick.com/rustjavi`, type: ActivityType.Watching }],
-      status: 'idle',
+      status: 'online',
     });
   }, 2000); 
 });
