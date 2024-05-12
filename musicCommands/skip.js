@@ -31,7 +31,6 @@ module.exports = {
      .setAuthor({
           name: 'Skipped Song!',
           iconURL: 'https://cdn.discordapp.com/attachments/1175488636033175602/1175488721253052426/right-chevron-.png?ex=656b6a2e&is=6558f52e&hm=7a73aa51cb35f25eba52055c7b4a1b56bbf3a6d150643adc15b52dc533236956&',
-          url: 'https://discord.gg/FUEHs7RCqz'
         })
           .setDescription('**Let\'s move on to the next beat...**');
         return message.reply({ embeds: [embed] });
