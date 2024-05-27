@@ -1,4 +1,3 @@
-
 const {
   joinVoiceChannel,
   createAudioPlayer,
@@ -10,6 +9,7 @@ const {
   voiceConnection,
 } = require('@discordjs/voice');
 const ytdl = require('ytdl-core');
+const ytpl = require('ytpl');  // Importar yt-playlist para manejar listas de reproducción
 ytdl.YTDL_NO_UPDATE = true;
 const YouTubeSearch = require('youtube-search');
 const { EmbedBuilder } = require('discord.js');
@@ -38,18 +38,17 @@ function createPlayer() {
   }
 }
 
-
 function enqueue(song) {
   queue.push(song);
 }
 
-
 function dequeue() {
   return queue.shift();
 }
+
 async function displayQueue(message) {
   if (queue.length === 0) {
-     const embed = new EmbedBuilder()
+    const embed = new EmbedBuilder()
       .setAuthor({
           name: 'Attention',
           iconURL: 'https://cdn.discordapp.com/attachments/1223544847047065662/1224631171766292500/9596-wrong.gif?ex=661e31a7&is=660bbca7&hm=0176645a3d582d6b93c8447a02cd7b1e7923b316212336fdc0b23b96b5e8ab4b&'
@@ -70,7 +69,6 @@ async function displayQueue(message) {
   message.reply({ embeds: [embed] });
 }
 
-
 async function playNextSong(connection, message) {
   if (queue.length > 0) {
     const nextSong = dequeue();
@@ -79,13 +77,12 @@ async function playNextSong(connection, message) {
     if (!connection.destroyed) {
       connection.destroy();
     }
-   const embed = new EmbedBuilder()
- .setAuthor({
+    const embed = new EmbedBuilder()
+      .setAuthor({
           name: 'Queue Empty',
           iconURL: 'https://cdn.discordapp.com/attachments/1223544847047065662/1224631831178248347/4381-anouncements-animated.gif?ex=661e3245&is=660bbd45&hm=25f3b77985241a4612a8f4946a4631f8add618d9f36a0d9157fb4821aa6d2a0e&'
         })
-     .setDescription('**Oops! The queue is empty. Our bot is taking a break. See you later!**')
-
+      .setDescription('**Oops! The queue is empty. Our bot is taking a break. See you later!**')
       .setColor('#ffcc00');
     message.reply({ embeds: [embed] });
   }
@@ -93,7 +90,6 @@ async function playNextSong(connection, message) {
 
 async function playSong(connection, searchQuery, message) {
   createPlayer(); 
-
   player.pause();
 
   let searchResult;
@@ -171,7 +167,6 @@ async function playSong(connection, searchQuery, message) {
       filter: interaction => interaction.isButton() && interaction.message.id === replyMessage.id,
       time: 180000, 
     });
-    
 
     collector.on('collect', async interaction => {
       const { member } = interaction;
@@ -182,7 +177,7 @@ async function playSong(connection, searchQuery, message) {
           await interaction.deferUpdate();
           break;
         case 'resume':
-            resumePlayback();
+          resumePlayback();
           await interaction.deferUpdate();
           break;
         case 'skip':
@@ -208,6 +203,7 @@ async function playSong(connection, searchQuery, message) {
           interaction.reply('❌ Invalid interaction.');
       }
     });
+
     setTimeout(() => {
         row.components.forEach(button => button.setDisabled(true));
         replyMessage.edit({ components: [row] });
@@ -216,37 +212,93 @@ async function playSong(connection, searchQuery, message) {
   } catch (error) {
     console.error(error);
     if (voiceConnection && !voiceConnection.destroyed) {
-    voiceConnection.destroy();
-    } 
+      voiceConnection.destroy();
+    }
     message.reply('🔴 There was an error playing the music.');
   }
 }
 
+async function handlePlaylist(url, message) {
+  try {
+    const playlist = await ytpl(url, { limit: 10 });  // Limitar a 10 canciones para este ejemplo
+    playlist.items.forEach(item => {
+      enqueue({ searchQuery: item.url, message });
+    });
+    message.reply(`✅ Added ${playlist.items.length} songs from the playlist to the queue.`);
+  } catch (error) {
+    console.error(error);
+    message.reply('❌ There was an error fetching the playlist.');
+  }
+}
 
+async function handleCommand(message) {
+  const voiceChannel = message.member.voice.channel;
+
+  if (!voiceChannel) {
+    return message.reply('🔴 You need to be in a voice channel to play music!');
+  }
+
+  const permissions = voiceChannel.permissionsFor(message.client.user);
+  if (!permissions.has('Connect') || !permissions.has('Speak')) {
+    return message.reply('🔴 I need the permissions to join and speak in your voice channel!');
+  }
+
+  const args = message.content.split(' ');
+  const command = args.shift().toLowerCase();
+
+  if (command === '?play') {
+    const query = args.join(' ');
+    if (!query) {
+      return message.reply('🔴 Please provide a song name or link to play.');
+    }
+
+    currentMessage = message; 
+
+    const connection = joinVoiceChannel({
+      channelId: voiceChannel.id,
+      guildId: voiceChannel.guild.id,
+      adapterCreator: voiceChannel.guild.voiceAdapterCreator,
+    });
+
+    currentConnection = connection;
+
+    if (ytpl.validateID(query)) {
+      await handlePlaylist(query, message);
+    } else {
+      enqueue({ searchQuery: query, message });
+      if (player.state.status !== AudioPlayerStatus.Playing) {
+        playNextSong(connection, message);
+      }
+    }
+  } else if (command === '?queue') {
+    displayQueue(message);
+  } else if (command === '?skip') {
+    if (queue.length > 0) {
+      playNextSong(currentConnection, currentMessage);
+      const embed = new EmbedBuilder()
+        .setColor('#2b71ec')
+        .setAuthor({
+          name: 'Skipped Song!',
+          iconURL: 'https://cdn.discordapp.com/attachments/1175488636033175602/1175488721253052426/right-chevron-.png?ex=656b6a2e&is=6558f52e&hm=50647a73aa51cb35f25eba52055c7b4a1b56bbf3a6d13adc15b52dc533236956&'
+        })
+        .setDescription('**Let\'s move on to the next beat...**');
+      message.reply({ embeds: [embed] });
+    } else {
+      message.reply('🔴 There are no more songs in the queue to skip.');
+    }
+  } else if (command === '?pause') {
+    pausePlayback();
+    message.reply('⏸️ Paused the current track.');
+  } else if (command === '?resume') {
+    resumePlayback();
+    message.reply('▶️ Resumed the current track.');
+  }
+}
 
 function pausePlayback() {
   if (player && player.state.status === AudioPlayerStatus.Playing) {
     player.pause();
     isPaused = true;
-
-    const embed = new EmbedBuilder()
-      .setAuthor({
-          name: 'Playback Paused!',
-          iconURL: 'https://cdn.discordapp.com/attachments/1175488636033175602/1175488720519049337/pause.png?ex=656b6a2e&is=6558f52e&hm=6695d8141e37330b5426f146ec6705243f497f95f08916a40c1db582c6e07d7e&'
-        })
-      .setDescription('**Halt the beats! Music taking a break..**')
-      .setColor('#2b71ec');
-
-    currentMessage.reply({ embeds: [embed] });
-  } else {
-    const embed = new EmbedBuilder()
- .setAuthor({
-          name: 'Attention',
-          iconURL: 'https://cdn.discordapp.com/attachments/1223544847047065662/1224631171766292500/9596-wrong.gif?ex=661e31a7&is=660bbca7&hm=016645a3d582d6b93c8447a02cd7b1e7923b3162127336fdc0b23b96b5e8ab4b&'
-        })
-      .setDescription('**The bot is not currently playing any song.**')
-      .setColor('#ff0000');
-    currentMessage.reply({ embeds: [embed] });
   }
 }
 
@@ -254,97 +306,9 @@ function resumePlayback() {
   if (player && player.state.status === AudioPlayerStatus.Paused) {
     player.unpause();
     isPaused = false;
-
-    const embed = new EmbedBuilder()
-       .setAuthor({
-          name: 'Playback Resumed!',
-          iconURL: 'https://cdn.discordapp.com/attachments/1175488636033175602/1175488720762310757/play.png?ex=656b6a2e&is=6558f52e&hm=ae4f01060fe8ae93f062d6574ef064ca0f6b4cf40b172f1bd54d8d405809c7df&'
-        })
-      .setDescription('**Back in action! Let the beats roll..**')
-      .setColor('#2b71ec');
-    currentMessage.reply({ embeds: [embed] });
-  } else {
-    const embed = new EmbedBuilder()
-      .setAuthor({
-          name: 'Attention',
-          iconURL: 'https://cdn.discordapp.com/attachments/1223544847047065662/1224631171766292500/9596-wrong.gif?ex=661e31a7&is=660bbca7&hm=6645a3d582d6b93c8447a02cd7b1e7923b316212017336fdc0b23b96b5e8ab4b&'
-        })
-      .setDescription('**The bot is not currently paused.**')
-      .setColor('#ff0000');
-
-    currentMessage.reply({ embeds: [embed] });
   }
 }
 
-
 module.exports = {
-  name: 'play',
-  description: 'Play music from YouTube',
-  execute: async (message, args) => {
-    const voiceChannel = message.member.voice.channel;
-    if (!voiceChannel) {
-      return message.reply('**⚠️ You need to be in a voice channel!**');
-    }
-
-    const searchQuery = args.join(' ');
-    if (!searchQuery) {
-      return message.reply('**▶️ Please provide a search query!**');
-    }
-
-    const connection = joinVoiceChannel({
-      channelId: voiceChannel.id,
-      guildId: message.guild.id,
-      adapterCreator: message.guild.voiceAdapterCreator,
-    });
-
-    currentConnection = connection; 
-    currentMessage = message; 
-
-    if (connection.state.status === VoiceConnectionStatus.Ready) {
-      enqueue({ searchQuery, message });
-      createPlayer();
-      const embed = new EmbedBuilder()
-        .setAuthor({
-        name: 'Added To Queue',
-        iconURL: 'https://cdn.discordapp.com/attachments/1156866389819281418/1157218651179597884/1213-verified.gif?ex=6517cf5a&is=65167dda&hm=cf7bc8fb4414cb412587ade0af285b77569d2568214d6baab8702ddeb6c38ad5&'
-    })
-        .setDescription(`**Your song has been queued up and is ready to play!**`)
-        .setColor('#14bdff')
-        .setFooter({ text: 'Use ?queue for more Information' });
-      return message.reply({ embeds: [embed] });
-    }
-
-    const listener = async (oldState, newState) => {
-      if (newState.member.user.bot) {
-        return;
-      }
-
-      if (oldState.channel && !newState.channel) {
-        const membersInChannel = oldState.channel.members.size;
-        if (membersInChannel === 1) {
-          message.client.removeListener('voiceStateUpdate', listener);
-
-          if (!connection.destroyed) {
-            connection.destroy();
-          }
-        }
-      }
-    };
-
-    message.client.on('voiceStateUpdate', listener);
-
-    await playSong(connection, searchQuery, message);
-  },
-  queue,
-  dequeue,
-  playNextSong,
-  playSong,
-  pause: () => {
-    pausePlayback();
-  },
-  resume: () => {
-    resumePlayback();
-  },
-  getPlayer: () => player,
-  getCurrentConnection: () => currentConnection, 
+  handleCommand,
 };
